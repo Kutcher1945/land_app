@@ -44,7 +44,7 @@ marker_cluster = MarkerCluster().add_to(m)
 for index, row in csv_data.iterrows():
     folium.Marker(
         location=[row['latitude'], row['longitude']],
-        popup=f"<b>Address:</b> {row['address']}<br><b>Area:</b> {row['area']} sq.m<br><b>Price:</b> ₸ {row['price']:,}",
+        popup=f"<b>Адрес:</b> {row['address']}<br><b>Площадь:</b> {row['area']} sq.m<br><b>Price:</b> ₸ {row['price']:,}",
     ).add_to(marker_cluster)  # Add markers to the MarkerCluster for clustering
 
 # Display the map in Streamlit using folium_static
