@@ -35,7 +35,7 @@ st.image("pic1.jpeg", use_column_width=True)
 csv_data = pd.read_csv('data/land_area.csv')
 
 # Create a base map
-m = folium.Map(location=[43.238293, 76.912471], zoom_start=12, use_container_width=True)  # You can adjust the initial location and zoom level
+m = folium.Map(location=[43.238293, 76.912471], zoom_start=10, use_container_width=True)  # You can adjust the initial location and zoom level
 
 # Create a MarkerCluster for clustering
 marker_cluster = MarkerCluster().add_to(m)
