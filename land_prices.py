@@ -2,6 +2,9 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LinearRegression
+import folium
+from streamlit_folium import folium_static
+from folium.plugins import MarkerCluster  # Import MarkerCluster for clustering
 
 # Create a DataFrame with the parameters and land prices
 data = pd.read_csv('data/train_data.csv')
@@ -26,6 +29,27 @@ st.title("Прогнозирование стоимости земельных �
 
 # Add an image after the title
 st.image("pic1.jpeg", use_column_width=True)
+
+
+# Load your CSV data
+csv_data = pd.read_csv('data/land_area.csv')
+
+# Create a base map
+m = folium.Map(location=[43.238293, 76.912471], zoom_start=12)  # You can adjust the initial location and zoom level
+
+# Create a MarkerCluster for clustering
+marker_cluster = MarkerCluster().add_to(m)
+
+# Add markers for each land plot with popups
+for index, row in csv_data.iterrows():
+    folium.Marker(
+        location=[row['latitude'], row['longitude']],
+        popup=f"<b>Address:</b> {row['address']}<br><b>Area:</b> {row['area']} sq.m<br><b>Price:</b> ₸ {row['price']:,}",
+    ).add_to(marker_cluster)  # Add markers to the MarkerCluster for clustering
+
+# Display the map in Streamlit using folium_static
+st.header("Карта земельных участков")
+folium_static(m)
 
 # Description
 st.markdown("""
@@ -163,16 +187,3 @@ if st.button("Предсказать стоимость", key="new_prediction_bu
         unsafe_allow_html=True,
     )
     st.metric(label='Стоимость земли (м²)', value=f"₸ {new_predicted_price:.0f}", delta=None)
-
-# Add a section for the Leaflet map
-st.header("Карта земельных участков")
-
-# Load a sample dataset with latitude, longitude, and land prices (replace with your data)
-map_data = pd.DataFrame({
-    'latitude': [43.238293, 43.255052, 43.274656],
-    'longitude': [76.912471, 76.943142, 76.996291],
-    'price': [20000, 25000, 30000]
-})
-
-# Display the map using st.map()
-st.map(map_data)
