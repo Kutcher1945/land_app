@@ -93,48 +93,48 @@ def format_price(price):
 
 # ##############NEW MAP###################
 
-# # Create a container for the map
-# st.header("Карта земельных участков")
+# Create a container for the map
+st.header("Карта земельных участков")
 
-# # Create a DataFrame with columns 'LAT' and 'LON' for latitude and longitude
-# marker_data = pd.DataFrame({
-#     'LAT': csv_data['latitude'],
-#     'LON': csv_data['longitude'],
-#     'TOOLTIP': csv_data.apply(lambda row: f"<b>Адрес:</b> {row['address']}<br><b>Площадь:</b> {row['area']} sq.m<br><b>Цена:</b> {format_price(row['price'])}", axis=1)
-# })
+# Create a DataFrame with columns 'LAT' and 'LON' for latitude and longitude
+marker_data = pd.DataFrame({
+    'LAT': csv_data['latitude'],
+    'LON': csv_data['longitude'],
+    'TOOLTIP': csv_data.apply(lambda row: f"<b>Адрес:</b> {row['address']}<br><b>Площадь:</b> {row['area']} sq.m<br><b>Цена:</b> {format_price(row['price'])}", axis=1)
+})
 
-# # Display the map using st.map with marker cluster
-# st.map(marker_data, use_container_width=True)
+# Display the map using st.map with marker cluster
+st.map(marker_data, use_container_width=True)
 
 ##############NEW MAP##################
 
 
 ##############NEW MAP###################
 
-# Create a container for the map
-st.header("Карта земельных участков")
+# # Create a container for the map
+# st.header("Карта земельных участков")
 
-# Create a function to generate the map
-@st.cache_resource
-def create_map():
-    csv_data['formatted_price'] = csv_data['price'].apply(format_price)
+# # Create a function to generate the map
+# @st.cache_resource
+# def create_map():
+#     csv_data['formatted_price'] = csv_data['price'].apply(format_price)
     
-    fig = px.scatter_mapbox(csv_data,
-                            lat="latitude",
-                            lon="longitude",
-                            hover_name="address",
-                            hover_data=["area", "formatted_price"],
-                            zoom=10)
+#     fig = px.scatter_mapbox(csv_data,
+#                             lat="latitude",
+#                             lon="longitude",
+#                             hover_name="address",
+#                             hover_data=["area", "formatted_price"],
+#                             zoom=10)
     
-    fig.update_layout(mapbox_style="open-street-map")
+#     fig.update_layout(mapbox_style="open-street-map")
 
-    return fig
+#     return fig
 
-# Call the create_map function to create or retrieve the cached map
-map_fig = create_map()
+# # Call the create_map function to create or retrieve the cached map
+# map_fig = create_map()
 
-# Display the map in Streamlit
-st.plotly_chart(map_fig)
+# # Display the map in Streamlit
+# st.plotly_chart(map_fig)
 
 ##############NEW MAP##################
 
