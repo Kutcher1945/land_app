@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import pydeck as pdk
 from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
 import folium
 from streamlit_folium import folium_static
 from folium.plugins import MarkerCluster  # Import MarkerCluster for clustering
@@ -26,9 +27,15 @@ def load_data_and_train_model():
     X_train = data.drop(columns=['price']).values
     y_train = data['price'].values
 
+    # Inform the user that training is in progress
+    st.info("Training the model...")
+
     # Train the model
-    model = LinearRegression()
+    model = RandomForestRegressor(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
+
+    # Inform the user that training is complete
+    st.success("Training complete!")
 
     return data, model
 
