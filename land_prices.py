@@ -1,22 +1,12 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
+import pydeck as pdk
 from sklearn.linear_model import LinearRegression
 import folium
 from streamlit_folium import folium_static
 from folium.plugins import MarkerCluster  # Import MarkerCluster for clustering
 
-# Create a DataFrame with the parameters and land prices
-data = pd.read_csv('data/train_data.csv')
-data.deficit_schools = data.deficit_schools/100
-
-# Split the dataset into input features (X_train) and target (y_train)
-X_train = data.drop(columns=['id','price']).values
-y_train = data['price'].values
-
-# Train the model
-model = LinearRegression()
-model.fit(X_train, y_train)
 
 # Set the app title and page icon
 st.set_page_config(
@@ -24,38 +14,89 @@ st.set_page_config(
     page_icon=":house:"
 )
 
+
+# Create a Streamlit caching decorator for data loading and model training
+@st.cache_data  # Cache the data and model
+def load_data_and_train_model():
+    # Load your CSV data
+    data = pd.read_csv('data/train_data.csv')
+
+    # Split the dataset into input features (X_train) and target (y_train)
+    X_train = data.drop(columns=['price']).values
+    y_train = data['price'].values
+
+    # Train the model
+    model = LinearRegression()
+    model.fit(X_train, y_train)
+
+    return data, model
+
+# Call the cached function to load data and train model
+data, model = load_data_and_train_model()
+
 # Create the Streamlit app interface
 st.title("Прогнозирование стоимости земельных участков")
 
 # Add an image after the title
 st.image("pic1.jpeg", use_column_width=True)
 
+@st.cache_data  # Cache the data and model
+def load_land_area():
+    # Load your CSV data
+    csv_data = pd.read_csv('data/land_area_updated.csv')
+    return csv_data
+
+
+# # Check if data and model are loaded in the session state, and load them if not
+# if 'data' not in st.session_state or 'model' not in st.session_state:
+#     st.session_state.data, st.session_state.model = load_data_and_train_model()
+
+# # Check if csv_data is loaded in the session state, and load it if not
+# if 'csv_data' not in st.session_state:
+#     st.session_state.csv_data = load_land_area()
+
 
 # Load your CSV data
-csv_data = pd.read_csv('data/land_area.csv')
+csv_data = load_land_area()
 
-# Create a base map
-m = folium.Map(location=[43.238293, 76.912471], zoom_start=10, use_container_width=True)  # You can adjust the initial location and zoom level
+# Create a container for the map
+with st.container():
+    # Create a base map
+    @st.cache_resource
+    def create_map():
+        m = folium.Map(location=[43.238293, 76.912471], zoom_start=9, control_scale=True, width=475)
 
-# Create a MarkerCluster for clustering
-marker_cluster = MarkerCluster().add_to(m)
+        # Create a MarkerCluster for clustering
+        marker_cluster = MarkerCluster().add_to(m)
 
-# Add markers for each land plot with popups
-for index, row in csv_data.iterrows():
-    folium.Marker(
-        location=[row['latitude'], row['longitude']],
-        popup=f"<b>Адрес:</b> {row['address']}<br><b>Соток:</b> {row['area']} sq.m<br><b>Price:</b> ₸ {row['price']:,}",
-    ).add_to(marker_cluster)  # Add markers to the MarkerCluster for clustering
+        # Function to format price as an integer (removing extra zeros)
+        def format_price(price):
+            return f"₸ {int(price):,}"  # Format as an integer
 
-# Display the map in Streamlit using folium_static
+        # Add markers for each land plot with popups
+        for index, row in csv_data.iterrows():
+            formatted_price = format_price(row['price'])  # Format the price using the function
+            folium.Marker(
+                location=[row['latitude'], row['longitude']],
+                popup=f"<b>Адрес:</b> {row['address']}<br><b>Площадь:</b> {row['area']} sq.m<br><b>Цена:</b> {formatted_price}",
+            ).add_to(marker_cluster)  # Add markers to the MarkerCluster for clustering
+
+        return m
+
+# Call the create_map function to create or retrieve the cached map
+m = create_map()
+
+# Display the map in Streamlit using HTML with responsive height
 st.header("Карта земельных участков")
-folium_static(m)
+st.components.v1.html(m._repr_html_(), width=700, height=400)
+
+
+
 
 # Description
 st.markdown("""
 ##### Веб-приложение для прогнозирования стоимости земельных участков в Алматы
-
-            
+        
 Это приложение использует машинное обучение для прогнозирования стоимости земельных участков. 
 Оно загружает предварительно обученную модель линейной регрессии, которая принимает на вход различные характеристики участка, 
 такие как расстояние до ДДО, школы, медучреждения, дефицит ДДО и школ, количество объектов досуга, наличие парковки, парка, камер видеонаблюдения, 
@@ -63,6 +104,7 @@ st.markdown("""
 индекс ближайшего датчика после полудня и до полудня. 
 Приложение предварительно обрабатывает входные данные, объединяя некоторые характеристики и добавляя новые, например, расстояние до ближайшего города.
 """)
+
 
 
 # # Input fields for property characteristics
@@ -131,41 +173,48 @@ st.markdown("""
 #     )
 #     st.metric(label='Стоимость земли (м²)', value=f"₸ {predicted_price:.0f}", delta=None)
 
+
+# Initialize the state variables
+# if 'prediction_button_clicked' not in st.session_state:
+#     st.session_state.prediction_button_clicked = False
+
+# # Button to make predictions
+# if st.button("Предсказать стоимость", key="prediction_button"):
+#     st.session_state.prediction_button_clicked = True
+
+
 st.markdown("""
 ##### Прогноз стоимости земли после программы реновации
             """)
 
 # Input fields for property characteristics
 st.header("Характеристики земельного участка")
-new_distance_1000m_ddo = st.checkbox("Наличие ДДО в радиусе 1 км", key="new_distance_1000m_ddo")
-new_distance_1000m_schools = st.checkbox("Наличие школы в радиусе 1 км", key="new_distance_1000m_schools")
-new_distance_1000m_medical = st.checkbox("Наличие медучреждения в радиусе 1 км", key="new_distance_1000m_medical")
-new_is_parking_exists = st.checkbox("Наличие парковки в радиусе 1 км", key="new_is_parking_exists")
-new_distance_park_1000m = st.checkbox("Наличие парка в радиусе 1 км", key="new_distance_park_1000m")
-new_distance_bikeroad_1000m = st.checkbox("Наличие велодорожки в радиусе 1 км", key="new_distance_bikeroad_1000m")
-new_deficit_ddo = st.number_input("Дефицит ДДО", min_value=0, key="new_deficit_ddo")
-new_deficit_schools = st.number_input("Дефицит школ", min_value=0, key="new_deficit_schools")
-new_amount_dosug_1000m = st.number_input("Количество объектов досуга в радиусе 1000м", min_value=0, key="new_amount_dosug_1000m")
-new_amount_of_cameras_1000m = st.number_input("Количество камер видеонаблюдения в радиусе 1000м", min_value=0, key="new_amount_of_cameras_1000m")
-new_amount_of_bins_1000m = st.number_input("Количество коммерческих организации в радиусе 1000м", min_value=0, key="new_amount_of_bins_1000m")
-new_amount_of_poi_1000m = st.number_input("Количество объектов благоустройства в радиусе 1000м", min_value=0, key="new_amount_of_poi_1000m")
-new_amount_of_business19_1000m = st.number_input("Количество предприятий общественного питания в радиусе 1000м", min_value=0, key="new_amount_of_business19_1000m")
-new_index_of_nearest_sensor_pm = st.number_input("Показатель датчика качества воздуха после полудня", min_value=0, key="new_index_of_nearest_sensor_pm")
-new_index_of_nearest_sensor_am = st.number_input("Показатель датчика качества воздуха до полудня", min_value=0, key="new_index_of_nearest_sensor_am")
-
-
-
-
-
+with st.form(key="input_form"):
+    new_distance_1000m_ddo = st.checkbox("Наличие ДДО в радиусе 1 км", key="new_distance_1000m_ddo")
+    new_distance_1000m_schools = st.checkbox("Наличие школы в радиусе 1 км", key="new_distance_1000m_schools")
+    new_distance_1000m_medical = st.checkbox("Наличие медучреждения в радиусе 1 км", key="new_distance_1000m_medical")
+    new_is_parking_exists = st.checkbox("Наличие парковки в радиусе 1 км", key="new_is_parking_exists")
+    new_distance_park_1000m = st.checkbox("Наличие парка в радиусе 1 км", key="new_distance_park_1000m")
+    new_distance_bikeroad_1000m = st.checkbox("Наличие велодорожки в радиусе 1 км", key="new_distance_bikeroad_1000m")
+    new_deficit_ddo = st.number_input("Дефицит ДДО", min_value=0, key="new_deficit_ddo")
+    new_deficit_schools = st.number_input("Дефицит школ", min_value=0, key="new_deficit_schools")
+    new_amount_dosug_1000m = st.number_input("Количество объектов досуга в радиусе 1000м", min_value=0, key="new_amount_dosug_1000m")
+    new_amount_of_cameras_1000m = st.number_input("Количество камер видеонаблюдения в радиусе 1000м", min_value=0, key="new_amount_of_cameras_1000m")
+    new_amount_of_bins_1000m = st.number_input("Количество коммерческих организации в радиусе 1000м", min_value=0, key="new_amount_of_bins_1000m")
+    new_amount_of_poi_1000m = st.number_input("Количество объектов благоустройства в радиусе 1000м", min_value=0, key="new_amount_of_poi_1000m")
+    new_amount_of_business19_1000m = st.number_input("Количество предприятий общественного питания в радиусе 1000м", min_value=0, key="new_amount_of_business19_1000m")
+    new_index_of_nearest_sensor_pm = st.number_input("Показатель датчика качества воздуха после полудня", min_value=0, key="new_index_of_nearest_sensor_pm")
+    new_index_of_nearest_sensor_am = st.number_input("Показатель датчика качества воздуха до полудня", min_value=0, key="new_index_of_nearest_sensor_am")
+    submitted = st.form_submit_button("Предсказать стоимость")
 
 # Button to make predictions
-if st.button("Предсказать стоимость", key="new_prediction_button"):
+if submitted:
     # Data preprocessing
     new_features = np.array([new_distance_1000m_ddo, new_distance_1000m_schools,
-                         new_distance_1000m_medical, new_deficit_ddo, new_deficit_schools, new_amount_dosug_1000m, new_is_parking_exists,
-                         new_distance_park_1000m, new_amount_of_cameras_1000m, new_distance_bikeroad_1000m, new_amount_of_bins_1000m,
-                         new_amount_of_poi_1000m, new_amount_of_business19_1000m, new_index_of_nearest_sensor_pm,
-                         new_index_of_nearest_sensor_am]).reshape(1, -1)
+                     new_distance_1000m_medical, new_deficit_ddo, new_deficit_schools, new_amount_dosug_1000m, new_is_parking_exists,
+                     new_distance_park_1000m, new_amount_of_cameras_1000m, new_distance_bikeroad_1000m, new_amount_of_bins_1000m,
+                     new_amount_of_poi_1000m, new_amount_of_business19_1000m, new_index_of_nearest_sensor_pm,
+                     new_index_of_nearest_sensor_am]).reshape(1, -1)
     
     # Predict property price
     new_predicted_price = model.predict(new_features)[0]
