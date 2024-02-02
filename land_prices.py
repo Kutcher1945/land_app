@@ -29,7 +29,7 @@ def load_data():
 data = load_data()
 
 # Load the Random Forest model
-model = joblib.load('model/random_forest_model.pkl')
+model = joblib.load('model/linear_reg_model.pkl')
 
 # Create the Streamlit app interface
 st.title("Прогнозирование стоимости земельных участков")
