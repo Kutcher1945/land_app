@@ -64,7 +64,7 @@ with st.container():
     # Create a base map
     @st.cache_resource
     def create_map():
-        m = folium.Map(location=[43.238293, 76.912471], zoom_start=9, control_scale=True, width=475)
+        m = folium.Map(location=[43.238293, 76.912471], zoom_start=9, control_scale=True, width=465)
 
         # Create a MarkerCluster for clustering
         marker_cluster = MarkerCluster().add_to(m)
