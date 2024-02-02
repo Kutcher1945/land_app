@@ -31,7 +31,7 @@ def load_data_and_train_model():
     st.info("Training the model...")
 
     # Train the model
-    model = RandomForestRegressor(n_estimators=100, random_state=42)
+    model = LinearRegression()
     model.fit(X_train, y_train)
 
     # Inform the user that training is complete
