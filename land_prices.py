@@ -28,14 +28,14 @@ def load_data_and_train_model():
     y_train = data['price'].values
 
     # Inform the user that training is in progress
-    st.info("Training the model...")
+    # st.info("Training the model...")
 
     # Train the model
     model = LinearRegression()
     model.fit(X_train, y_train)
 
     # Inform the user that training is complete
-    st.success("Training complete!")
+    # st.success("Training complete!")
 
     return data, model
 
