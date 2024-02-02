@@ -19,3 +19,10 @@ csv_data['price'] = csv_data['price'].apply(remove_last_three_zeros)
 csv_data.to_csv('data/land_area_updated.csv', index=False)
 
 # Now, you can use 'data/land_area_updated.csv' in your Streamlit app
+
+#config.toml base
+#[theme] # You have to add this line
+
+#primaryColor = '#FF8C02' # Bright Orange
+
+#secondaryBackgroundColor = '#D1D8D0' # Lighter Blue
