@@ -8,7 +8,6 @@ import folium
 from streamlit_folium import folium_static
 from folium.plugins import MarkerCluster  # Import MarkerCluster for clustering
 import plotly.express as px
-import joblib
 
 
 # Set the app title and page icon
@@ -20,16 +19,29 @@ st.set_page_config(
 
 # Create a Streamlit caching decorator for data loading and model training
 @st.cache_data  # Cache the data and model
-def load_data():
+def load_data_and_train_model():
     # Load your CSV data
     data = pd.read_csv('data/train_data.csv')
-    return data
 
-# Call the cached function to load data
-data = load_data()
+    # Split the dataset into input features (X_train) and target (y_train)
+    X_train = data.drop(columns=['price']).values
+    y_train = data['price'].values
 
-# Load the Random Forest model
-model = joblib.load('model/random_forest_model.pkl')
+    # Inform the user that training is in progress
+    # st.info("Training the model...")
+
+    # Train the model
+    model = LinearRegression()
+    # model = RandomForestRegressor(n_estimators=100, random_state=42)
+    model.fit(X_train, y_train)
+
+    # Inform the user that training is complete
+    # st.success("Training complete!")
+
+    return data, model
+
+# Call the cached function to load data and train model
+data, model = load_data_and_train_model()
 
 # Create the Streamlit app interface
 st.title("Прогнозирование стоимости земельных участков")
