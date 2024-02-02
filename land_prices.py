@@ -64,7 +64,7 @@ with st.container():
     # Create a base map
     @st.cache_resource
     def create_map():
-        m = folium.Map(location=[43.238293, 76.912471], zoom_start=9, control_scale=True, width=465)
+        m = folium.Map(location=[43.238293, 76.912471], zoom_start=9, control_scale=True, width=700)
 
         # Create a MarkerCluster for clustering
         marker_cluster = MarkerCluster().add_to(m)
@@ -88,7 +88,7 @@ m = create_map()
 
 # Display the map in Streamlit using HTML with responsive height
 st.header("Карта земельных участков")
-st.components.v1.html(m._repr_html_(), width=700, height=400)
+st.components.v1.html(m._repr_html_(), width=710, height=400)
 
 
 
