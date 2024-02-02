@@ -6,6 +6,7 @@ from sklearn.linear_model import LinearRegression
 import folium
 from streamlit_folium import folium_static
 from folium.plugins import MarkerCluster  # Import MarkerCluster for clustering
+import plotly.express as px
 
 
 # Set the app title and page icon
@@ -59,39 +60,83 @@ def load_land_area():
 # Load your CSV data
 csv_data = load_land_area()
 
+# Function to format price as an integer (removing extra zeros)
+def format_price(price):
+    return f"₸ {int(price):,}"  # Format as an integer
+
+# # Create a container for the map
+# with st.container():
+#     # Create a base map
+#     @st.cache_resource
+#     def create_map():
+#         m = folium.Map(location=[43.238293, 76.912471], zoom_start=9, control_scale=True, width=700)
+
+#         # Create a MarkerCluster for clustering
+#         marker_cluster = MarkerCluster().add_to(m)
+
+#         # Add markers for each land plot with popups
+#         for index, row in csv_data.iterrows():
+#             formatted_price = format_price(row['price'])  # Format the price using the function
+#             folium.Marker(
+#                 location=[row['latitude'], row['longitude']],
+#                 popup=f"<b>Адрес:</b> {row['address']}<br><b>Площадь:</b> {row['area']} sq.m<br><b>Цена:</b> {formatted_price}",
+#             ).add_to(marker_cluster)  # Add markers to the MarkerCluster for clustering
+
+#         return m
+
+# # Call the create_map function to create or retrieve the cached map
+# m = create_map()
+
+# # Display the map in Streamlit using HTML with responsive height
+# st.header("Карта земельных участков")
+# st.components.v1.html(m._repr_html_(), width=710, height=400)
+
+# ##############NEW MAP###################
+
+# # Create a container for the map
+# st.header("Карта земельных участков")
+
+# # Create a DataFrame with columns 'LAT' and 'LON' for latitude and longitude
+# marker_data = pd.DataFrame({
+#     'LAT': csv_data['latitude'],
+#     'LON': csv_data['longitude'],
+#     'TOOLTIP': csv_data.apply(lambda row: f"<b>Адрес:</b> {row['address']}<br><b>Площадь:</b> {row['area']} sq.m<br><b>Цена:</b> {format_price(row['price'])}", axis=1)
+# })
+
+# # Display the map using st.map with marker cluster
+# st.map(marker_data, use_container_width=True)
+
+##############NEW MAP##################
+
+
+##############NEW MAP###################
+
 # Create a container for the map
-with st.container():
-    # Create a base map
-    @st.cache_resource
-    def create_map():
-        m = folium.Map(location=[43.238293, 76.912471], zoom_start=9, control_scale=True, width=700)
+st.header("Карта земельных участков")
 
-        # Create a MarkerCluster for clustering
-        marker_cluster = MarkerCluster().add_to(m)
+# Create a function to generate the map
+@st.cache_resource
+def create_map():
+    csv_data['formatted_price'] = csv_data['price'].apply(format_price)
+    
+    fig = px.scatter_mapbox(csv_data,
+                            lat="latitude",
+                            lon="longitude",
+                            hover_name="address",
+                            hover_data=["area", "formatted_price"],
+                            zoom=10)
+    
+    fig.update_layout(mapbox_style="open-street-map")
 
-        # Function to format price as an integer (removing extra zeros)
-        def format_price(price):
-            return f"₸ {int(price):,}"  # Format as an integer
-
-        # Add markers for each land plot with popups
-        for index, row in csv_data.iterrows():
-            formatted_price = format_price(row['price'])  # Format the price using the function
-            folium.Marker(
-                location=[row['latitude'], row['longitude']],
-                popup=f"<b>Адрес:</b> {row['address']}<br><b>Площадь:</b> {row['area']} sq.m<br><b>Цена:</b> {formatted_price}",
-            ).add_to(marker_cluster)  # Add markers to the MarkerCluster for clustering
-
-        return m
+    return fig
 
 # Call the create_map function to create or retrieve the cached map
-m = create_map()
+map_fig = create_map()
 
-# Display the map in Streamlit using HTML with responsive height
-st.header("Карта земельных участков")
-st.components.v1.html(m._repr_html_(), width=710, height=400)
+# Display the map in Streamlit
+st.plotly_chart(map_fig)
 
-
-
+##############NEW MAP##################
 
 # Description
 st.markdown("""
