@@ -8,6 +8,7 @@ import folium
 from streamlit_folium import folium_static
 from folium.plugins import MarkerCluster  # Import MarkerCluster for clustering
 import plotly.express as px
+import joblib
 
 
 # Set the app title and page icon
@@ -19,29 +20,16 @@ st.set_page_config(
 
 # Create a Streamlit caching decorator for data loading and model training
 @st.cache_data  # Cache the data and model
-def load_data_and_train_model():
+def load_data():
     # Load your CSV data
     data = pd.read_csv('data/train_data.csv')
+    return data
 
-    # Split the dataset into input features (X_train) and target (y_train)
-    X_train = data.drop(columns=['price']).values
-    y_train = data['price'].values
+# Call the cached function to load data
+data = load_data()
 
-    # Inform the user that training is in progress
-    # st.info("Training the model...")
-
-    # Train the model
-    model = LinearRegression()
-    # model = RandomForestRegressor(n_estimators=100, random_state=42)
-    model.fit(X_train, y_train)
-
-    # Inform the user that training is complete
-    # st.success("Training complete!")
-
-    return data, model
-
-# Call the cached function to load data and train model
-data, model = load_data_and_train_model()
+# Load the Random Forest model
+model = joblib.load('model/random_forest_model.pkl')
 
 # Create the Streamlit app interface
 st.title("Прогнозирование стоимости земельных участков")
@@ -72,47 +60,47 @@ csv_data = load_land_area()
 def format_price(price):
     return f"₸ {int(price):,}"  # Format as an integer
 
-# Create a container for the map
-with st.container():
-    # Create a base map
-    @st.cache_resource
-    def create_map():
-        m = folium.Map(location=[43.238293, 76.912471], zoom_start=9, control_scale=True, width=700)
+# # Create a container for the map
+# with st.container():
+#     # Create a base map
+#     @st.cache_resource
+#     def create_map():
+#         m = folium.Map(location=[43.238293, 76.912471], zoom_start=9, control_scale=True, width=700)
 
-        # Create a MarkerCluster for clustering
-        marker_cluster = MarkerCluster().add_to(m)
+#         # Create a MarkerCluster for clustering
+#         marker_cluster = MarkerCluster().add_to(m)
 
-        # Add markers for each land plot with popups
-        for index, row in csv_data.iterrows():
-            formatted_price = format_price(row['price'])  # Format the price using the function
-            folium.Marker(
-                location=[row['latitude'], row['longitude']],
-                popup=f"<b>Адрес:</b> {row['address']}<br><b>Площадь:</b> {row['area']} sq.m<br><b>Цена:</b> {formatted_price}",
-            ).add_to(marker_cluster)  # Add markers to the MarkerCluster for clustering
+#         # Add markers for each land plot with popups
+#         for index, row in csv_data.iterrows():
+#             formatted_price = format_price(row['price'])  # Format the price using the function
+#             folium.Marker(
+#                 location=[row['latitude'], row['longitude']],
+#                 popup=f"<b>Адрес:</b> {row['address']}<br><b>Площадь:</b> {row['area']} sq.m<br><b>Цена:</b> {formatted_price}",
+#             ).add_to(marker_cluster)  # Add markers to the MarkerCluster for clustering
 
-        return m
+#         return m
 
-# Call the create_map function to create or retrieve the cached map
-m = create_map()
+# # Call the create_map function to create or retrieve the cached map
+# m = create_map()
 
-# Display the map in Streamlit using HTML with responsive height
-st.header("Карта земельных участков")
-st.components.v1.html(m._repr_html_(), width=710, height=400)
+# # Display the map in Streamlit using HTML with responsive height
+# st.header("Карта земельных участков")
+# st.components.v1.html(m._repr_html_(), width=710, height=400)
 
 # ##############NEW MAP###################
 
 # Create a container for the map
-# st.header("Карта земельных участков")
+st.header("Карта земельных участков")
 
-# # Create a DataFrame with columns 'LAT' and 'LON' for latitude and longitude
-# marker_data = pd.DataFrame({
-#     'LAT': csv_data['latitude'],
-#     'LON': csv_data['longitude'],
-#     'TOOLTIP': csv_data.apply(lambda row: f"<b>Адрес:</b> {row['address']}<br><b>Площадь:</b> {row['area']} sq.m<br><b>Цена:</b> {format_price(row['price'])}", axis=1)
-# })
+# Create a DataFrame with columns 'LAT' and 'LON' for latitude and longitude
+marker_data = pd.DataFrame({
+    'LAT': csv_data['latitude'],
+    'LON': csv_data['longitude'],
+    'TOOLTIP': csv_data.apply(lambda row: f"<b>Адрес:</b> {row['address']}<br><b>Площадь:</b> {row['area']} sq.m<br><b>Цена:</b> {format_price(row['price'])}", axis=1)
+})
 
-# # Display the map using st.map with marker cluster
-# st.map(marker_data, use_container_width=True)
+# Display the map using st.map with marker cluster
+st.map(marker_data, use_container_width=True)
 
 ##############NEW MAP##################
 
@@ -122,7 +110,7 @@ st.components.v1.html(m._repr_html_(), width=710, height=400)
 # # Create a container for the map
 # st.header("Карта земельных участков")
 
-# # # Create a function to generate the map
+# # Create a function to generate the map
 # @st.cache_resource
 # def create_map():
 #     csv_data['formatted_price'] = csv_data['price'].apply(format_price)
