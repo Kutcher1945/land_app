@@ -260,6 +260,59 @@ with st.form(key="input_form"):
     new_index_of_nearest_sensor_am = st.number_input("Показатель датчика качества воздуха до полудня", min_value=0, key="new_index_of_nearest_sensor_am")
     submitted = st.form_submit_button("Предсказать стоимость")
 
+
+prescriptive_message_temp = """
+	<div style="background-color:silver;overflow-x: auto; padding:10px;border-radius:5px;margin:10px;">
+		<h3 style="text-align:justify;color:black;padding:10px">Рекомендации по улучшению характеристик земельного участка</h3>
+		<ul>
+			<li style="text-align:justify;color:black;padding:10px">
+				<b>Наличие ДДО в радиусе 1 км:</b> Расширьте доступ к детским дошкольным учреждениям в районе, чтобы обеспечить удобство для семей с детьми.
+			</li>
+			<li style="text-align:justify;color:black;padding:10px">
+				<b>Наличие школы в радиусе 1 км:</b> Улучшите качество образования в существующих школах или рассмотрите возможность строительства новых учебных учреждений.
+			</li>
+			<li style="text-align:justify;color:black;padding:10px">
+				<b>Наличие медучреждения в радиусе 1 км:</b> Расширьте медицинские услуги или совершенствуйте существующие медицинские учреждения, чтобы обеспечить доступ к медицинской помощи.
+			</li>
+			<li style="text-align:justify;color:black;padding:10px">
+				<b>Наличие парковки в радиусе 1 км:</b> Обеспечьте наличие достаточного количества парковочных мест и поддерживайте их в хорошем состоянии для удобства жителей и посетителей.
+			</li>
+			<li style="text-align:justify;color:black;padding:10px">
+				<b>Наличие парка в радиусе 1 км:</b> Инвестируйте в создание или обслуживание парков, чтобы улучшить качество жизни в районе и обеспечить места для отдыха и рекреации.
+			</li>
+			<li style="text-align:justify;color:black;padding:10px">
+				<b>Наличие велодорожки в радиусе 1 км:</b> Поддерживайте инфраструктуру для велосипедистов, строя новые велодорожки или улучшая существующие, чтобы способствовать экологичному транспорту.
+			</li>
+			<li style="text-align:justify;color:black;padding:10px">
+				<b>Дефицит ДДО:</b> Рассмотрите возможность построения новых детских дошкольных учреждений или предоставьте стимулы частным поставщикам для открытия новых центров.
+			</li>
+			<li style="text-align:justify;color:black;padding:10px">
+				<b>Дефицит школ:</b> Для решения дефицита школ можно спланировать строительство новых учебных заведений или выделить ресурсы для улучшения качества и мощности существующих школ.
+			</li>
+			<li style="text-align:justify;color:black;padding:10px">
+				<b>Количество объектов досуга в радиусе 1000 м:</b> Поддерживайте разнообразные места для развлечений, чтобы удовлетворить различные интересы и возрастные группы.
+			</li>
+			<li style="text-align:justify;color:black;padding:10px">
+				<b>Количество камер видеонаблюдения в радиусе 1000 м:</b> Обеспечьте безопасность района, поддерживая и расширяя сеть видеонаблюдения.
+			</li>
+			<li style="text-align:justify;color:black;padding:10px">
+				<b>Количество коммерческих организаций в радиусе 1000 м:</b> Содействуйте разнообразию бизнес-среды, поощряя открытие коммерческих организаций, которые соответствуют потребностям сообщества.
+			</li>
+			<li style="text-align:justify;color:black;padding:10px">
+				<b>Количество объектов благоустройства в радиусе 1000 м:</b> Инвестируйте в благоустройство общественных мест и уделяйте внимание обслуживанию скамеек, детских площадок и центров общественного обслуживания.
+			</li>
+			<li style="text-align:justify;color:black;padding:10px">
+				<b>Количество предприятий общественного питания в радиусе 1000 м:</b> Поддерживайте разнообразную сферу общественного питания, способствуя развитию ресторанов и кафе, предлагающих различные виды кухни.
+			</li>
+			<li style="text-align:justify;color:black;padding:10px">
+				<b>Показатель датчика качества воздуха:</b> Улучшите качество воздуха, внедряя меры по снижению загрязнения и поощрению экологически чистых практик.
+			</li>
+		</ul>
+	</div>
+"""
+
+
+
 # Button to make predictions
 if submitted:
     # Data preprocessing
@@ -288,4 +341,16 @@ if submitted:
         """,
         unsafe_allow_html=True,
     )
-    st.metric(label='Стоимость земли (м²)', value=f"₸ {new_predicted_price:.0f}", delta=None)
+
+    if new_predicted_price > 250000:
+        st.metric(label='Стоимость земли (м²)', value=f"₸ {new_predicted_price:.0f}", delta=None)
+        st.warning("Стоимость земли выше 250,000 ₸.")
+        st.markdown(prescriptive_message_temp, unsafe_allow_html=True)
+    else:
+        st.metric(label='Стоимость земли (м²)', value=f"₸ {new_predicted_price:.0f}", delta=None)
+
+
+
+
+
+
