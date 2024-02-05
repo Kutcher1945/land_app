@@ -262,7 +262,7 @@ with st.form(key="input_form"):
 
 
 prescriptive_message_temp = """
-	<div style="background-color:silver;overflow-x: auto; padding:10px;border-radius:5px;margin:10px;">
+	<div style="background-color:#f0f2f6;overflow-x: auto; padding:10px;border-radius:5px;margin:10px;">
 		<h3 style="text-align:justify;color:black;padding:10px">Рекомендации по улучшению характеристик земельного участка</h3>
 		<ul>
 			<li style="text-align:justify;color:black;padding:10px">
@@ -344,7 +344,7 @@ if submitted:
 
     if new_predicted_price > 250000:
         st.metric(label='Стоимость земли (м²)', value=f"₸ {new_predicted_price:.0f}", delta=None)
-        st.warning("Стоимость земли выше 250,000 ₸.")
+        st.info("Стоимость земли выше 250,000 ₸.")
         st.markdown(prescriptive_message_temp, unsafe_allow_html=True)
     else:
         st.metric(label='Стоимость земли (м²)', value=f"₸ {new_predicted_price:.0f}", delta=None)
