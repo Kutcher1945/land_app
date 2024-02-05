@@ -24,7 +24,7 @@ def load_data_and_train_model():
     data = pd.read_csv('data/train_data.csv')
 
     # Split the dataset into input features (X_train) and target (y_train)
-    X_train = data.drop(columns=['price']).values
+    X_train = data.drop(columns=['id', 'price']).values
     y_train = data['price'].values
 
     # Inform the user that training is in progress
@@ -326,7 +326,7 @@ if submitted:
     new_predicted_price = model.predict(new_features)[0]
     
     # Apply the minimum and maximum limits
-    new_predicted_price = min(max(new_predicted_price, 80000), 350000)
+    # new_predicted_price = min(max(new_predicted_price, 80000), 350000)
     
     # Display the prediction result
     st.header("Результат прогноза")
