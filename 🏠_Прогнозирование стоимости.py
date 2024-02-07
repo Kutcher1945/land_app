@@ -49,6 +49,12 @@ st.title("Прогнозирование стоимости земельных �
 # Add an image after the title
 st.image("pic1.jpeg", use_column_width=True)
 
+# Create a sidebar menu
+# menu = st.sidebar.selectbox(
+#     'Меню',
+#     ('TEST', 'TEST2', 'TEST3')
+# )
+
 @st.cache_data  # Cache the data and model
 def load_land_area():
     # Load your CSV data
@@ -261,8 +267,13 @@ with st.form(key="input_form"):
     submitted = st.form_submit_button("Предсказать стоимость")
 
 
+# Increase font size for all the text
+st.markdown("<style>h1, h2, h3, h4, h5, h6 {font-size: 32px !important;}</style>", unsafe_allow_html=True)
+st.markdown("<style>p, label {font-size: 20px !important;}</style>", unsafe_allow_html=True)
+
+
 prescriptive_message_temp = """
-	<div style="background-color:#f0f2f6;overflow-x: auto; padding:10px;border-radius:5px;margin:10px;">
+	<div style="background-color:#e4e4e4;overflow-x: auto; padding:10px;border-radius:5px;margin:10px;">
 		<h3 style="text-align:justify;color:black;padding:10px">Рекомендации по улучшению характеристик земельного участка</h3>
 		<ul>
 			<li style="text-align:justify;color:black;padding:10px">
@@ -344,7 +355,7 @@ if submitted:
 
     if new_predicted_price > 250000:
         st.metric(label='Стоимость земли (м²)', value=f"₸ {new_predicted_price:.0f}", delta=None)
-        st.info("Стоимость земли выше 250,000 ₸.")
+        st.success("Стоимость земли выше 250,000 ₸.")
         st.markdown(prescriptive_message_temp, unsafe_allow_html=True)
     else:
         st.metric(label='Стоимость земли (м²)', value=f"₸ {new_predicted_price:.0f}", delta=None)
